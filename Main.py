@@ -1,12 +1,12 @@
 import csv
-from keras.models import load_model
+
 from keras.callbacks import ModelCheckpoint
+from keras.models import load_model
 from keras.optimizers import Adam
-from scipy import misc
 
 print("start")
 samples = []
-with open('../../../opt/newdata/driving_log.csv') as csvfile:
+with open('../newdata/driving_log.csv') as csvfile:
     reader = csv.reader(csvfile)
     for line in reader:
         samples.append(line)
@@ -14,16 +14,16 @@ with open('../../../opt/newdata/driving_log.csv') as csvfile:
 from sklearn.model_selection import train_test_split
 train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 
-import cv2
 import numpy as np
 from sklearn.utils import shuffle
 from keras.models import Sequential
-from keras.layers.core import Dense, Flatten, Dropout, Lambda
+from keras.layers.core import Dense, Flatten, Lambda
 from keras.layers.convolutional import Conv2D
-from keras.layers.pooling import MaxPooling2D
 from keras.layers import Cropping2D
+from scipy import ndimage
 
-def generator(samples, batch_size=128):
+
+def generator(samples, batch_size=64):
     num_samples = len(samples)
     while 1: # Loop forever so the generator never terminates
         shuffle(samples)
@@ -35,7 +35,7 @@ def generator(samples, batch_size=128):
             for batch_sample in batch_samples:
                 if batch_sample[3] == 'steering':
                     continue
-                path = '../../../opt/newdata/IMG/'    
+                path = '../newdata/IMG/'    
                 name = path + batch_sample[0].split('/')[-1]
 #                 left = path + batch_sample[1].split('/')[-1]
 #                 right = path +batch_sample[2].split('/')[-1]
@@ -45,7 +45,7 @@ def generator(samples, batch_size=128):
                     continue
 #                 steering_left = steering_center + correction
 #                 steering_right = steering_center - correction
-                center_image = misc.imread(name)#cv2.imread(name)
+                center_image = ndimage.imread(name)  # cv2.imread(name)
 #                 left_image = misc.imread(left)               
 #                 right_image = misc.imread(right)
                 images.append(center_image)
@@ -95,6 +95,7 @@ checkpoint = ModelCheckpoint('model-{epoch:03d}.h5',
                              monitor='val_loss',
                              verbose=0,
                              save_best_only=False,
-                             mode='auto')    
-model.fit_generator(train_generator, samples_per_epoch= len(train_samples)*2, validation_data=validation_generator, nb_val_samples=len(validation_samples), nb_epoch=1, verbose = 1, callbacks=[checkpoint])
+                             mode='auto')
+model.fit_generator(train_generator, samples_per_epoch=len(train_samples) * 2, validation_data=validation_generator,
+                    nb_val_samples=len(validation_samples), nb_epoch=3, verbose=1, callbacks=[checkpoint])
 model.save('model.h5')

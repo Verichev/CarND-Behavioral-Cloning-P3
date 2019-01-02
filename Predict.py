@@ -1,8 +1,10 @@
-from keras.models import load_model
 import csv
+
 import cv2
 import numpy as np
+from keras.models import load_model
 from sklearn.utils import shuffle
+
 
 def generator(samples, batch_size=32):
     num_samples = len(samples)
@@ -43,7 +45,7 @@ train_samples, validation_samples = train_test_split(samples, test_size=0.2)
 
 gen = generator(samples, 1000)
 #
-model = load_model(filepath='model-001.h5')
+model = load_model(filepath='model.h5')
 #
 s = next(gen)
 print("shape", s[0])
